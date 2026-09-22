@@ -18,6 +18,8 @@ class AppConfig:
     config_path: Path
     backups_dir: Path
     codex_binary: str
+    codex_home: Path | None = None
+    codex_profile: str | None = None
     codex_model: str | None = None
     codex_timeout_seconds: int = 180
     max_recent_messages: int = 6
@@ -51,6 +53,8 @@ class AppConfig:
             config_path=config_path,
             backups_dir=chosen / "backups",
             codex_binary=str(llm.get("codex_binary") or default_binary),
+            codex_home=(Path(llm["codex_home"]).expanduser().resolve() if llm.get("codex_home") else None),
+            codex_profile=llm.get("profile") or None,
             codex_model=llm.get("model") or None,
             codex_timeout_seconds=int(llm.get("timeout_seconds") or 180),
             max_recent_messages=int(context.get("max_recent_messages") or 6),
@@ -59,6 +63,8 @@ class AppConfig:
     def ensure_layout(self) -> None:
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self.backups_dir.mkdir(parents=True, exist_ok=True)
+        if self.codex_home is not None:
+            self.codex_home.mkdir(parents=True, exist_ok=True)
         if not self.config_path.exists():
             write_default_config(self.config_path)
 
@@ -70,6 +76,8 @@ def write_default_config(path: "Path | str") -> None:
 llm:
   provider: codex_cli
   codex_binary: /Applications/ChatGPT.app/Contents/Resources/codex
+  codex_home: null
+  profile: null
   model: null
   timeout_seconds: 180
 context:

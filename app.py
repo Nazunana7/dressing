@@ -3,6 +3,7 @@ from __future__ import annotations
 import streamlit as st
 
 from dressing_assistant.config import AppConfig
+from dressing_assistant.presentation import format_assistant_message
 from dressing_assistant.service import DressingService
 from dressing_assistant.storage import (
     atomic_write_text,
@@ -11,7 +12,6 @@ from dressing_assistant.storage import (
     load_wardrobe,
     render_profile_document,
 )
-from dressing_assistant.wardrobe import summarize_operations
 
 
 st.set_page_config(
@@ -42,22 +42,6 @@ def init_state() -> None:
             st.session_state[key] = value
 
 
-def render_assistant_message(result) -> str:
-    lines = [result.reply]
-    if result.outfits:
-        lines.append("")
-        for index, outfit in enumerate(result.outfits, start=1):
-            lines.append(f"### 方案 {index}：{outfit.title}")
-            lines.append(f"单品 ID：{', '.join(outfit.item_ids)}")
-            lines.append(outfit.reason)
-            lines.append("")
-    if result.proposed_operations:
-        lines.append("")
-        lines.append("**待确认修改**")
-        lines.append(summarize_operations(result.proposed_operations))
-    return "\n".join(lines).strip()
-
-
 def submit_turn(config: AppConfig, message: str) -> None:
     service = DressingService(config)
     recent = st.session_state.messages[-config.max_recent_messages:]
@@ -71,7 +55,8 @@ def submit_turn(config: AppConfig, message: str) -> None:
         )
 
     st.session_state.messages.append({"role": "user", "content": message})
-    rendered = render_assistant_message(result)
+    _, _, wardrobe = service.load_state()
+    rendered = format_assistant_message(result, wardrobe)
     st.session_state.messages.append({"role": "assistant", "content": rendered})
     st.session_state.session_summary = result.session_summary or st.session_state.session_summary
     st.session_state.temporary_exclusions = list(
@@ -229,6 +214,10 @@ with settings_tab:
     st.code(str(config.config_path), language=None)
     st.write("Codex 可执行文件：")
     st.code(config.codex_binary, language=None)
+    st.write("专用 CODEX_HOME：")
+    st.code(str(config.codex_home or "当前 Codex 默认配置"), language=None)
+    st.write("Codex Profile：")
+    st.code(config.codex_profile or "未指定", language=None)
     st.write("模型：")
-    st.code(config.codex_model or "使用 CC Switch 当前配置", language=None)
+    st.code(config.codex_model or "使用该 CODEX_HOME 的默认模型", language=None)
     st.info("第一版不保存聊天历史；关闭或清空会话后只保留 Profile 和衣柜文件。")

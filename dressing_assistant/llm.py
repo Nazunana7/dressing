@@ -57,9 +57,15 @@ class CodexCLIProvider:
                 "--output-last-message",
                 str(output_path),
             ]
+            if self.config.codex_profile:
+                command.extend(["-p", self.config.codex_profile])
             if self.config.codex_model:
                 command.extend(["-m", self.config.codex_model])
             command.append("-")
+
+            env = os.environ.copy()
+            if self.config.codex_home is not None:
+                env["CODEX_HOME"] = str(self.config.codex_home)
 
             try:
                 completed = subprocess.run(
@@ -69,6 +75,7 @@ class CodexCLIProvider:
                     capture_output=True,
                     timeout=self.config.codex_timeout_seconds,
                     cwd=tmp_path,
+                    env=env,
                     check=False,
                 )
             except subprocess.TimeoutExpired as exc:

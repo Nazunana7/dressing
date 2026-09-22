@@ -63,8 +63,10 @@ pip install -r requirements-dev.txt
 ## 启动
 
 ```bash
-.venv/bin/streamlit run app.py
+./run.sh
 ```
+
+`run.sh` 会在缺少 `.venv` 或依赖时自动创建和安装，然后启动 Streamlit。
 
 浏览器打开：
 
@@ -86,7 +88,26 @@ context:
   max_recent_messages: 6
 ```
 
-`model: null` 表示使用 Codex 当前配置，也就是 CC Switch 当前选择的 Provider 和模型。也可以在 `config.yaml` 或 `DRESSING_CODEX_BIN` 中指定其他 Codex 可执行文件。
+`model: null` 表示使用该 Codex 配置的默认模型。为了不继承 CC Switch 的 DeepSeek 配置，可以在外部 `config.yaml` 设置独立的 `codex_home`：
+
+```yaml
+llm:
+  provider: codex_cli
+  codex_binary: /Applications/ChatGPT.app/Contents/Resources/codex
+  codex_home: /Users/your-name/Documents/WardrobeAssistantData/codex-home
+  profile: null
+  model: null
+  timeout_seconds: 180
+```
+
+然后只对这个专用目录执行 ChatGPT 登录：
+
+```bash
+CODEX_HOME="/Users/your-name/Documents/WardrobeAssistantData/codex-home" \
+/Applications/ChatGPT.app/Contents/Resources/codex login --device-auth
+```
+
+该目录与 CC Switch 使用的 `~/.codex` 分离。登录 ChatGPT 后，Dressing 会使用 Codex 默认的 GPT 模型；不需要 OpenAI API Key。
 
 ## 数据编辑
 
@@ -101,6 +122,14 @@ context:
 .venv/bin/python -m pytest
 ```
 
+## 本地文件与 GitHub
+
+详细说明见 [`docs/LOCAL_FILES.md`](docs/LOCAL_FILES.md)。
+
+- 源码、测试、文档和配置模板放在 GitHub。
+- `.venv` 约 381 MB，属于本机生成文件，不应上传 GitHub；删除后运行 `./run.sh` 会自动重建。
+- `profile.md`、`wardrobe.yaml` 和 ChatGPT 登录状态保存在私有数据目录，不进入 GitHub。
+
 ## 隐私边界
 
 - 普通推荐只发送 Profile 的核心穿搭摘要，不发送完整脸部细节。
@@ -108,6 +137,7 @@ context:
 - 衣柜只发送紧凑字段，不发送本地文件内容之外的额外个人信息。
 - 聊天历史不落盘。
 - 临时排除条件不会写入衣柜文件。
+- 使用独立 `CODEX_HOME` 时，Profile 和衣柜仍然只保存在本地数据目录；模型请求会发送精简穿搭上下文到所登录的 ChatGPT/Codex 服务。
 
 ## 当前限制
 
