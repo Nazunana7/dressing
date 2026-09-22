@@ -109,6 +109,21 @@ CODEX_HOME="/Users/your-name/Documents/WardrobeAssistantData/codex-home" \
 
 该目录与 CC Switch 使用的 `~/.codex` 分离。登录 ChatGPT 后，Dressing 会使用 Codex 默认的 GPT 模型；不需要 OpenAI API Key。
 
+## 检查实际模型
+
+运行：
+
+```bash
+.venv/bin/python scripts/check_model.py
+```
+
+该脚本使用与 Dressing 完全相同的 `CODEX_HOME` 和模型配置，并检查：
+
+- 当前登录方式是否为 ChatGPT
+- `provider` 是否为 `openai`
+- 实际 `model` 是否为 GPT
+- 最小请求能否成功
+
 ## 数据编辑
 
 - 可以直接编辑 `profile.md` 和 `wardrobe.yaml`，下一次请求会自动读取最新文件。
