@@ -63,8 +63,9 @@ class AppConfig:
     def ensure_layout(self) -> None:
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self.backups_dir.mkdir(parents=True, exist_ok=True)
-        if self.codex_home is not None:
-            self.codex_home.mkdir(parents=True, exist_ok=True)
+        codex_home = getattr(self, "codex_home", None)
+        if codex_home is not None:
+            codex_home.mkdir(parents=True, exist_ok=True)
         if not self.config_path.exists():
             write_default_config(self.config_path)
 

@@ -57,15 +57,18 @@ class CodexCLIProvider:
                 "--output-last-message",
                 str(output_path),
             ]
-            if self.config.codex_profile:
-                command.extend(["-p", self.config.codex_profile])
-            if self.config.codex_model:
-                command.extend(["-m", self.config.codex_model])
+            codex_profile = getattr(self.config, "codex_profile", None)
+            codex_model = getattr(self.config, "codex_model", None)
+            if codex_profile:
+                command.extend(["-p", codex_profile])
+            if codex_model:
+                command.extend(["-m", codex_model])
             command.append("-")
 
             env = os.environ.copy()
-            if self.config.codex_home is not None:
-                env["CODEX_HOME"] = str(self.config.codex_home)
+            codex_home = getattr(self.config, "codex_home", None)
+            if codex_home is not None:
+                env["CODEX_HOME"] = str(codex_home)
 
             try:
                 completed = subprocess.run(
