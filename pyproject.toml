@@ -1,0 +1,14 @@
+[project]
+name = "dressing-assistant"
+version = "0.1.0"
+description = "Local-first personal wardrobe assistant with file-backed data and Codex CLI"
+requires-python = ">=3.10"
+dependencies = [
+  "streamlit>=1.40,<2",
+  "PyYAML>=6.0",
+  "pydantic>=2.8",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
